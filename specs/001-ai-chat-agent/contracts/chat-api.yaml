@@ -1,0 +1,39 @@
+openapi: 3.0.0
+info:
+  title: Chat API for Todo AI Agent
+  version: 1.0.0
+paths:
+  /api/{user_id}/chat:
+    post:
+      summary: Process natural language todo requests
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                conversation_id:
+                  type: string
+      responses:
+        '200':
+          description: Successful response from AI agent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                  conversation_id:
+                    type: string
+                  tool_calls:
+                    type: array
