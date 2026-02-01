@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 from typing import List
+from uuid import UUID
 from ..deps import get_current_user
 from ..schemas.task import TaskCreateRequest, TaskResponse, TaskListResponse, TaskUpdateRequest, TaskToggleCompleteRequest, MessageResponse
 from ...services.task_service import TaskService
@@ -26,13 +27,13 @@ def list_tasks(
 
     task_responses = [
         TaskResponse(
-            id=task.id,
-            title=task.title,
-            description=task.description,
-            completed=task.completed,
-            user_id=task.user_id,
-            created_at=task.created_at,
-            updated_at=task.updated_at
+            id=task["id"],
+            title=task["title"],
+            description=task["description"],
+            completed=task["completed"],
+            user_id=task["user_id"],
+            created_at=task["created_at"],
+            updated_at=task["updated_at"]
         )
         for task in tasks
     ]
@@ -60,19 +61,19 @@ def create_task(
 
     # Return the created task
     return TaskResponse(
-        id=db_task.id,
-        title=db_task.title,
-        description=db_task.description,
-        completed=db_task.completed,
-        user_id=db_task.user_id,
-        created_at=db_task.created_at,
-        updated_at=db_task.updated_at
+        id=db_task["id"],
+        title=db_task["title"],
+        description=db_task["description"],
+        completed=db_task["completed"],
+        user_id=db_task["user_id"],
+        created_at=db_task["created_at"],
+        updated_at=db_task["updated_at"]
     )
 
 
-@router.get("/api/tasks/{task_id}", response_model=TaskResponse)
+@router.get("/{task_id}", response_model=TaskResponse)
 def get_task(
-    task_id: int,
+    task_id: UUID,
     current_user: dict = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
@@ -84,19 +85,19 @@ def get_task(
     db_task = TaskService.get_task_by_id(session=session, task_id=task_id, user_id=user_id)
 
     return TaskResponse(
-        id=db_task.id,
-        title=db_task.title,
-        description=db_task.description,
-        completed=db_task.completed,
-        user_id=db_task.user_id,
-        created_at=db_task.created_at,
-        updated_at=db_task.updated_at
+        id=db_task["id"],
+        title=db_task["title"],
+        description=db_task["description"],
+        completed=db_task["completed"],
+        user_id=db_task["user_id"],
+        created_at=db_task["created_at"],
+        updated_at=db_task["updated_at"]
     )
 
 
-@router.put("/api/tasks/{task_id}", response_model=TaskResponse)
+@router.put("/{task_id}", response_model=TaskResponse)
 def update_task(
-    task_id: int,
+    task_id: UUID,
     task_update: TaskUpdateRequest,
     current_user: dict = Depends(get_current_user),
     session: Session = Depends(get_session)
@@ -109,24 +110,24 @@ def update_task(
     db_task = TaskService.update_task(
         session=session,
         task_id=task_id,
-        task_update=Task(**task_update.dict(exclude_unset=True)),
+        task_update=task_update,
         user_id=user_id
     )
 
     return TaskResponse(
-        id=db_task.id,
-        title=db_task.title,
-        description=db_task.description,
-        completed=db_task.completed,
-        user_id=db_task.user_id,
-        created_at=db_task.created_at,
-        updated_at=db_task.updated_at
+        id=db_task["id"],
+        title=db_task["title"],
+        description=db_task["description"],
+        completed=db_task["completed"],
+        user_id=db_task["user_id"],
+        created_at=db_task["created_at"],
+        updated_at=db_task["updated_at"]
     )
 
 
-@router.delete("/api/tasks/{task_id}", response_model=MessageResponse)
+@router.delete("/{task_id}", response_model=MessageResponse)
 def delete_task(
-    task_id: int,
+    task_id: UUID,
     current_user: dict = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
@@ -143,9 +144,9 @@ def delete_task(
         raise HTTPException(status_code=404, detail="Task not found")
 
 
-@router.patch("/api/tasks/{task_id}/complete", response_model=TaskResponse)
+@router.patch("/{task_id}/complete", response_model=TaskResponse)
 def toggle_task_completion(
-    task_id: int,
+    task_id: UUID,
     task_toggle: TaskToggleCompleteRequest,
     current_user: dict = Depends(get_current_user),
     session: Session = Depends(get_session)
@@ -158,11 +159,11 @@ def toggle_task_completion(
     db_task = TaskService.toggle_task_completion(session=session, task_id=task_id, user_id=user_id)
 
     return TaskResponse(
-        id=db_task.id,
-        title=db_task.title,
-        description=db_task.description,
-        completed=db_task.completed,
-        user_id=db_task.user_id,
-        created_at=db_task.created_at,
-        updated_at=db_task.updated_at
+        id=db_task["id"],
+        title=db_task["title"],
+        description=db_task["description"],
+        completed=db_task["completed"],
+        user_id=db_task["user_id"],
+        created_at=db_task["created_at"],
+        updated_at=db_task["updated_at"]
     )

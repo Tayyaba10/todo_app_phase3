@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { apiClient } from '@/lib/services/api';
+import { useAuth } from '@/lib/auth/auth-context';
+import { apiService } from '@/lib/services/api';
 
 interface Message {
   id: string;
@@ -61,13 +61,15 @@ export default function ChatInterface({ userId, conversationId, className = '' }
     setIsLoading(true);
 
     try {
-      // Send message to backend API
-      const response = await apiClient.post(`/api/${actualUserId}/chat`, {
-        message: inputValue,
-        conversation_id: conversationId || null,
-      });
+      // Validate that we have a user ID before sending
+      if (!actualUserId) {
+        throw new Error('User not authenticated. Please log in to use the chat.');
+      }
 
-      const { response: agentResponse, conversation_id: newConversationId } = response.data;
+      // Send message to backend API using the service
+      const response = await apiService.sendMessage(actualUserId, inputValue, conversationId || undefined);
+
+      const { response: agentResponse, conversation_id: newConversationId } = response;
 
       // Add agent response to UI
       const agentMessage: Message = {
@@ -89,7 +91,7 @@ export default function ChatInterface({ userId, conversationId, className = '' }
       // Add error message to UI
       const errorMessage: Message = {
         id: Date.now().toString(),
-        content: 'Sorry, I encountered an error processing your request. Please try again.',
+        content: error instanceof Error ? error.message : 'Sorry, I encountered an error processing your request. Please try again.',
         sender: 'agent',
         timestamp: new Date(),
       };

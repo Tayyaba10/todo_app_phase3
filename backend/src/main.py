@@ -5,15 +5,16 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from sqlmodel import SQLModel
-from .api.routes import tasks
-from .api.routes import auth
-from .api.routes import chat
+from src.api.routes import tasks
+from src.api.routes import auth
+from src.api.routes import chat
 from .core.config import settings
 from .core.database import engine
 import logging
 import traceback
 from datetime import datetime
-
+from src.models.user import User
+from src.models.task import Task
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -30,10 +31,11 @@ def setup_error_monitoring(app: FastAPI):
     @app.middleware("http")
     async def error_monitoring_middleware(request: Request, call_next):
         start_time = datetime.utcnow()
+        response = None
         try:
             response = await call_next(request)
             # Log successful requests
-            if response.status_code >= 400:
+            if response and response.status_code >= 400:
                 logger.warning(f"Request failed: {request.method} {request.url} - Status: {response.status_code}")
             return response
         except Exception as e:
@@ -52,13 +54,14 @@ def setup_error_monitoring(app: FastAPI):
         finally:
             # Log request metrics
             process_time = (datetime.utcnow() - start_time).total_seconds()
-            logger.info(f"{request.method} {request.url.path} - {response.status_code if 'response' in locals() else 'ERR'} - {process_time:.3f}s")
+            response_status = getattr(response, 'status_code', 'ERR') if response else 'ERR'
+            logger.info(f"{request.method} {request.url.path} - {response_status} - {process_time:.3f}s")
 
 
 # Global exception handler
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Global exception: {exc} at {request.url}", exc_info=True)
-    return {"detail": "Internal server error", "error_id": str(exc.__hash__())}
+    return {"detail": "Internal server error", "error_id": str(hash(exc))}
 
 
 @asynccontextmanager
@@ -91,12 +94,12 @@ def create_app() -> FastAPI:
     # Add CORS middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
-        allow_credentials=False,
+        allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"],
+        allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
         # Expose the authorization header to client-side applications
-        #expose_headers=["Access-Control-Allow-Origin", "Authorization"]
+        expose_headers=["Access-Control-Allow-Origin", "Authorization"]
     )
 
     # Add rate limiting
@@ -107,7 +110,7 @@ def create_app() -> FastAPI:
     setup_error_monitoring(app)
 
     # Include API routes
-    app.include_router(tasks.router, prefix="/tasks", tags=["tasks"])
+    app.include_router(tasks.router, prefix="/api/tasks", tags=["tasks"])
     app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
     app.include_router(chat.router, prefix="/api", tags=["chat"])
 

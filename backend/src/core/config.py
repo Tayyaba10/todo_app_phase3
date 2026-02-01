@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     # Better Auth settings
     better_auth_secret: str
     
+    # OpenAI API Key
+    OPENAI_API_KEY: str | None = None
+    
      # API config
     api_host: str = "0.0.0.0"
     api_port: int = 8000

@@ -2,6 +2,8 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import TYPE_CHECKING, Optional, List
 from datetime import datetime
 #from .task import Task
+import uuid
+from uuid import UUID
 
 if TYPE_CHECKING:
     from .task import Task   # ✅ ONLY for type hints
@@ -12,7 +14,14 @@ class UserBase(SQLModel):
 
 
 class User(UserBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    __tablename__ = "users" 
+     
+    #id: Optional[int] = Field(default=None, primary_key=True)
+    id: uuid.UUID = Field(
+        default_factory=uuid.uuid4,
+        primary_key=True,
+        index=True,
+    )
     hashed_password: str = Field(nullable=False)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
@@ -22,6 +31,6 @@ class User(UserBase, table=True):
 
 
 class UserRead(UserBase):
-    id: int
+    id: UUID
     created_at: datetime
     updated_at: datetime

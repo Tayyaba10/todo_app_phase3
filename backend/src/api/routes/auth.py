@@ -43,7 +43,7 @@ def register(
     # In a real application, you would hash the password before storing it
     # For now, we'll simulate user creation
     from passlib.context import CryptContext
-    pwd_context = CryptContext(schemes=["bycrpt"], deprecated="auto")
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     raw_password = register_data.password.strip()
 
@@ -83,7 +83,7 @@ def register(
     )
 
 
-@router.post("/auth/login", response_model=LoginResponse)
+@router.post("/login", response_model=LoginResponse)
 def login(
     login_data: LoginRequest,
     session: Session = Depends(get_session)
@@ -106,7 +106,7 @@ def login(
         )
 
     from passlib.context import CryptContext
-    pwd_context = CryptContext(schemes=["bycrpt"], deprecated="auto")
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     # Verify the password hash
     if not pwd_context.verify(login_data.password, user.hashed_password):
@@ -134,7 +134,7 @@ def login(
     )
 
 
-@router.get("/auth/profile", response_model=ProfileResponse)
+@router.get("/profile", response_model=ProfileResponse)
 def get_profile(
     current_user: dict = Depends(get_current_user),
     session: Session = Depends(get_session)

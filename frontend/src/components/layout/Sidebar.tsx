@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useAuth } from '../../lib/hooks/useAuth';
+import { useAuth } from '../../lib/auth/auth-context';
 
 const Sidebar: React.FC = () => {
   const { isAuthenticated } = useAuth();

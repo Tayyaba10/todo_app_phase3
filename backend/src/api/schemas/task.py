@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
+from uuid import UUID
 
 
 # Request schemas
@@ -22,11 +23,11 @@ class TaskToggleCompleteRequest(BaseModel):
 
 # Response schemas
 class TaskResponse(BaseModel):
-    id: int
+    id: UUID
     title: str
     description: Optional[str]
     completed: bool
-    user_id: int
+    user_id: UUID
     created_at: datetime
     updated_at: datetime
 

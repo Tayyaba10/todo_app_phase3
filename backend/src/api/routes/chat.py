@@ -4,12 +4,13 @@ from typing import Optional
 from sqlmodel import Session
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from ...database import get_session
+from ...core.database import get_session
 from ...services.agent_service import AgentService
 from ...api.deps import get_current_user
 from ...api.schemas.conversation import ChatRequest, ChatResponse
 import os
 import logging
+from fastapi import Request
 
 
 # Set up logging
@@ -22,10 +23,11 @@ limiter = Limiter(key_func=get_remote_address)
 router = APIRouter()
 
 
-@router.post("/{user_id}/chat", response_model=ChatResponse)
+@router.post("/chat/{user_id}", response_model=ChatResponse)
 @limiter.limit("10/minute")  # Limit to 10 requests per minute per IP
 def chat(
     user_id: UUID,
+    request: Request,
     chat_request: ChatRequest,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_session)

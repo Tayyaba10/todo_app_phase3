@@ -6,9 +6,9 @@ import { useRouter } from 'next/dist/client/components/navigation';
 
 interface TaskItemProps {
   task: Task;
-  onToggle?: (id: number, completed: boolean) => void;
+  onToggle?: (id: string, completed: boolean) => void;
   // onEdit?: (task: Task) => void;
-  onDelete?: (id: number) => void;
+  onDelete?: (id: string) => void;
 }
 
 const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete }) => {

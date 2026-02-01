@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../lib/hooks/useAuth';
+import { useAuth } from '../../lib/auth/auth-context';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -32,7 +32,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         const redirectPath = localStorage.getItem('redirectAfterLogin');
         if (redirectPath) {
           localStorage.removeItem('redirectAfterLogin');
-          router.push(redirectPath);
+          router.push(redirectPath as any);
         } else {
           router.push('/dashboard');
         }
